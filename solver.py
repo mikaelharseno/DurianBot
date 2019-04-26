@@ -12,14 +12,11 @@ def solve(client):
 
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
-    client.scout(random.choice(non_home), all_students)
+    a = client.scout(random.choice(non_home), all_students)
+    print(a)
 
     for _ in range(100):
         u, v = random.choice(list(client.G.edges()))
         client.remote(u, v)
 
     client.end()
-
-def allnodeshasbot(G):
-    newGmst = nx.minimum_spanning_tree(G)
-    
