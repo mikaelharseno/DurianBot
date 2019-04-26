@@ -13,68 +13,113 @@ def solve(client):
     graph = client.G
 
     # Start by finding location of all bots using scout and remote.
+    # Remotes likely places using edge with lowest weight
+    # Does scout to all nodes first
     nodes = list(graph.nodes())
-    nodes.remove(client.home)
+    numNodes = len(nodes)
     nodeValues = [0 for _ in nodes]
+    checked = [False for _ in nodes]
+    checked[nodes.index(client.h)] = True
+
+    botsin = [0 for _ in nodes]
+
     all_students = list(range(1, client.students + 1))
-    nodeReports = [list(client.scout(node, all_students).values()) for node in nodes]
+
+    nodeReports = [0 for _ in nodes]
+    for i in range(len(nodes)):
+        if nodes[i] != client.h:
+            nodeReports[i] = list(client.scout(nodes[i],all_students).values())
+
     totalnodes = len(nodes)
     minNumTruth = ceil(totalnodes/2)
     numStudents = client.students
+
     numTruth = [0 for _ in range(numStudents)]
     numLies = [0 for _ in range(numStudents)]
     worstcaseprob = [(minNumTruth - numTruth[i])/(totalnodes - numTruth[i] - numLies[i]) for i in range(numStudents)]
 
     botsleft = client.bots - sum(client.bot_count)
 
+    counter = 0
+
     while botsleft > 0 and len(nodes) > 0:
-        for node in nodes:
-            score = studentjudgment(worstcaseprob, nodeReports[node])
-            nodeValues[node] = score[0] * score[1]
-        target = nodes[nodeValues.index(max(nodeValues))]
-        targetedges = graph.edges.data('weight', default=0)
-        for i in range(targetedges):
-            u,v,w = targetedges[i]
+        targetIndex = -1
+        for i in range(numNodes):
+            if checked[i] == False:
+                score = studentjudgment(worstcaseprob, nodeReports[i])
+                if type(score) == int:
+                    targetIndex = i
+                    print("Found for sure")
+                    print(i)
+                    break
+                nodeValues[i] = score[0] * score[1]
+                if targetIndex == -1:
+                    targetIndex = i
+                    maxNodeValue = nodeValues[i]
+                if maxNodeValue < nodeValues[i]:
+                    targetIndex = i
+                    maxNodeValue = nodeValues[i]
+        target = nodes[targetIndex]
+        checked[targetIndex] = True
+        nextEdges = list(graph.edges(target,'weight',default=0))
+        #print(nextEdges)
+        minEdgeIndex = 0
+        minEdge = -1
+        for i in range(len(nextEdges)):
             if i == 0:
-                imin = i
-                wmin = w
-                vmin = v
-                umin = u
-            if w < wmin:
-                imin = i
-                wmin = w
-                vmin = v
-                umin = u
-        if umin == target:
-            client.remote(target, vmin)
+                minEdge = nextEdges[i][2]
+                minEdgeIndex = i
+            if nextEdges[i][2] < minEdge:
+                minEdge = nextEdges[i][2]
+                minEdgeIndex = i
+        success = client.remote(target, nextEdges[minEdgeIndex][1])
+        #print(nextEdges[minEdgeIndex])
+        #print(nodes.index(nextEdges[minEdgeIndex][1]))
+        botsin[nodes.index(nextEdges[minEdgeIndex][1])] += success
+        #targetedges = graph.edges.data('weight', default=0)
+        # for i in range(targetedges):
+        #     u,v,w = targetedges[i]
+        #     if i == 0:
+        #         imin = i
+        #         wmin = w
+        #         vmin = v
+        #         umin = u
+        #     if w < wmin:
+        #         imin = i
+        #         wmin = w
+        #         vmin = v
+        #         umin = u
+        # if umin == target:
+        #     client.remote(target, vmin)
+        # else:
+        #     client.remote(target, umin)
+        if success - botsin[targetIndex] > 0:
+            right = True
         else:
-            client.remote(target, umin)
-        nodes.remove(target)
+            right = False
+        for i in range(numStudents):
+            answer = nodeReports[targetIndex][i]
+            if answer == right:
+                numTruth[i] += 1
+            else:
+                numLies[i] += 1
+        worstcaseprob = [(minNumTruth - numTruth[i]) / (totalnodes - numTruth[i] - numLies[i]) for i in
+                         range(numStudents)]
+
         botsleft = client.bots - sum(client.bot_count)
+        counter += 1
 
-    client.end()
-
+    print("Bots recovered in remote(s): ")
+    print(counter)
 
     # When all the locations discovered, we do algorithm in q2. (Prim's combined with Uniform Cost Search)
+    # Uses client.bot_count
 
-    mst = prim_mst(graph)
-
-    degrees = list(mst.degree)
-    print(degrees)
-
-    while (len(mst) > 1):
-        nodeindex = 0
-        lenNodes = len(degrees)
-        while nodeindex < lenNodes:
-            if degrees[nodeindex][1] == 1 and degrees[nodeindex][0] != client.home:
-                break
-            nodeindex += 1
-        u = degrees[nodeindex][0]
-        v = list(mst[u].keys())[0]
-        client.remote(u,v)
-        print(client.bot_count[client.home])
-        mst.remove_node(u)
-        degrees = list(mst.degree)
+    botnodes = client.bot_locations
+    for node in botnodes:
+        path = nx.shortest_path(graph, source=node, target=client.h)
+        for i in range(len(path)-1):
+            client.remote(path[i],path[i+1])
 
     print("Number of bots needed to be resqued:")
     print(client.l)
@@ -87,11 +132,14 @@ def studentjudgment(probs, reports):
     judge = [0, 0]
     for i in range(len(probs)):
         if probs[i] == 1:
-            return reports[i]
+            if reports[i] == True:
+                return 1
+            else:
+                return (-1, 1000)
         if reports[i] == 0:
-            judge[0] += probs[i]
+            judge[0] += (probs[i]**2)
         if reports[i] == 1:
-            judge[1] += probs[i]
+            judge[1] += (probs[i]**2)
     if judge[0] >= judge[1]:
         return (-1, judge[0])
     else:
