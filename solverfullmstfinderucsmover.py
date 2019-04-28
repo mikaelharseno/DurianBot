@@ -12,6 +12,9 @@ def solve(client):
 
     graph = client.G
 
+    epsilon = 0.2
+    rho = 0.5
+
     #Start by finding location of all bots using scout and remote.
     all_students = list(range(1, client.students + 1))
     totalNodes = len(graph.nodes)
@@ -68,7 +71,7 @@ def solve(client):
         mstDist = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
         for leaf in leaves:
             nodeDistance[leaf] = nx.shortest_path_length(mstDist, source=leaf, target=client.h)
-        targetLeaf = student_judgment(numTruth, numLies, leaves, nodeReports, nodeDistance)
+        targetLeaf = student_judgment(numTruth, numLies, worstcaseprob, leaves, nodeReports, nodeDistance, epsilon, 200, 100)
 
         #Pick remote direction
         mstRemote = nx.minimum_spanning_tree(graph)
@@ -115,22 +118,23 @@ def solve(client):
 
     client.end()
 
-def student_judgment(probs, reports):
-    judge = [0, 0]
-    for i in range(len(probs)):
-        if probs[i] == 1:
-            if reports[i] == True:
-                return 1
+def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
+    weights = [1 for _ in range(len(numTruth))]
+    for i in range(len(numTruth)):
+        expo = -1*a*probabilities[i] + b
+        weights[i] = (1 - epsilon)**expo
+    nodeScores = [0 for _ in range(len(potentialNodes))]
+    for i in range(len(potentialNodes)):
+        curScore = 0
+        curReport = nodeReports[potentialNodes[i]]
+        for j in range(len(numTruth)):
+            if curReport[j] == True:
+                curScore += weights[j]
             else:
-                return (-1, 1000)
-        if reports[i] == 0:
-            judge[0] += (probs[i]**1)
-        if reports[i] == 1:
-            judge[1] += (probs[i]**1)
-    if judge[0] >= judge[1]:
-        return (-1, judge[0])
-    else:
-        return (1, judge[1])
+                curScore += -1*weights[j]
+        nodeScores[i] = curScore
+    bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
+    return bestNode
 
 def produce_sparse_mst(G, bot_locs, client_home):
     # Note: Relaxation not applied yet. Might be applied for further improvement.
