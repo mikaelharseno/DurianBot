@@ -15,6 +15,8 @@ def solve(client):
     # Start by finding location of all bots using scout and remote.
     # Remotes likely places using edge with lowest weight
     # Does scout to all nodes first
+    mst = nx.minimum_spanning_tree(graph)
+
     nodes = list(graph.nodes())
     numNodes = len(nodes)
     nodeValues = [0 for _ in nodes]
@@ -61,21 +63,9 @@ def solve(client):
                     maxNodeValue = nodeValues[i]
         target = nodes[targetIndex]
         checked[targetIndex] = True
-        nextEdges = list(graph.edges(target,'weight',default=0))
-        #print(nextEdges)
-        minEdgeIndex = 0
-        minEdge = -1
-        for i in range(len(nextEdges)):
-            if i == 0:
-                minEdge = nextEdges[i][2]
-                minEdgeIndex = i
-            if nextEdges[i][2] < minEdge:
-                minEdge = nextEdges[i][2]
-                minEdgeIndex = i
-        success = client.remote(target, nextEdges[minEdgeIndex][1])
-        #print(nextEdges[minEdgeIndex])
-        #print(nodes.index(nextEdges[minEdgeIndex][1]))
-        botsin[nodes.index(nextEdges[minEdgeIndex][1])] += success
+        path = nx.shortest_path(mst, source=target, target=client.h)
+        success = client.remote(target, path[1])
+        botsin[nodes.index(path[1])] += success
         #targetedges = graph.edges.data('weight', default=0)
         # for i in range(targetedges):
         #     u,v,w = targetedges[i]
@@ -137,9 +127,9 @@ def studentjudgment(probs, reports):
             else:
                 return (-1, 1000)
         if reports[i] == 0:
-            judge[0] += (probs[i]**2)
+            judge[0] += (probs[i]**1)
         if reports[i] == 1:
-            judge[1] += (probs[i]**2)
+            judge[1] += (probs[i]**1)
     if judge[0] >= judge[1]:
         return (-1, judge[0])
     else:
