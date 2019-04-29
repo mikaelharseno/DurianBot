@@ -10,7 +10,7 @@ from datetime import datetime
 from statistics import stdev, mean
 
 epsilon = 0.25
-rho = 0.5
+rho = 0.05
 a = 4
 b = 2
 
@@ -156,7 +156,7 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
                 curScore += (weights[j])
             else:
                 curScore += (-1*weights[j])
-        nodeScores[i] = curScore - nodeDistances[i]*rho
+        nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
