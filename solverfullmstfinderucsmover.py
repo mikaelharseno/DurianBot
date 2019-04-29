@@ -5,15 +5,19 @@ from math import ceil
 import random
 from heapq import heappop, heappush
 from itertools import count
+from client_tester import Client
+from datetime import datetime
+
+epsilon = 0.4
+rho = 0.5
+a = 100
+b = 50
 
 def solve(client):
     client.end()
     client.start()
 
     graph = client.G
-
-    epsilon = 0.2
-    rho = 0.5
 
     #Start by finding location of all bots using scout and remote.
     all_students = list(range(1, client.students + 1))
@@ -31,29 +35,31 @@ def solve(client):
     botsleft = client.bots - sum(client.bot_count)
     counter = 0
 
+    shortest_path_mst = produce_shortest_path_mst(graph, list(graph.nodes()), client.h)
+
     while botsleft > 0 and len(unvisited) > 0:
         #Pick node selector
         unvisitedOrHasBot = combinelist(unvisited, client.bot_locations)
         #   Pick a subset of nodes from unvisited
         #       Use shortest path mst
-        mst = produce_shortest_path_mst(graph, unvisited, client.h)
+        #mst = produce_shortest_path_mst(graph, unvisited, client.h)
         #       Use sparse mst for unvisited
-        mst = produce_sparse_mst(graph, unvisited, client.h)
+        #mst = produce_sparse_mst(graph, unvisited, client.h)
         #       Use sparse mst for unvisited or has bot, but remove leaves until all leaves are unvisited
         totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
         totalMstLeaves = get_leaf_nodes(totalMst)
         allLeavesUnvisited = False
         while not allLeavesUnvisited:
-            allLeavesUnvisited = True
-            for checkLeaf in totalMstLeaves:
-                if checkLeaf not in unvisited:
-                    totalMst.remove_node(checkLeaf)
-                    allLeavesUnvisited = False
-            totalMstLeaves = get_leaf_nodes(totalMst)
+           allLeavesUnvisited = True
+           for checkLeaf in totalMstLeaves:
+               if checkLeaf not in unvisited:
+                   totalMst.remove_node(checkLeaf)
+                   allLeavesUnvisited = False
+           totalMstLeaves = get_leaf_nodes(totalMst)
         mst = totalMst
         leaves = get_leaf_nodes(mst)
         #   Pick all nodes in unvisited
-        leaves = unvisited
+        # leaves = unvisited
         #   Remove home node if it is in leaves
         if client.h in leaves:
             leaves.remove(client.h)
@@ -64,24 +70,30 @@ def solve(client):
             if leaf not in nodeReports:
                 nodeReports[leaf] = list(client.scout(leaf, all_students).values())
         #   Pick distance measure mst
-        mstDist = nx.minimum_spanning_tree(graph)
-        mstDist = produce_shortest_path_mst(graph, list(graph.nodes()), client.h)
-        mstDist = produce_sparse_mst(graph, leaves, client.h)
-        mstDist = produce_sparse_mst(graph, unvisited, client.h)
-        mstDist = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        #mstDist = nx.minimum_spanning_tree(graph)
+        mstDist = shortest_path_mst
+        #mstDist = produce_sparse_mst(graph, leaves, client.h)
+        #mstDist = produce_sparse_mst(graph, unvisited, client.h)
+        #mstDist = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
         for leaf in leaves:
             nodeDistance[leaf] = nx.shortest_path_length(mstDist, source=leaf, target=client.h)
-        targetLeaf = student_judgment(numTruth, numLies, worstcaseprob, leaves, nodeReports, nodeDistance, epsilon, 200, 100)
+        targetLeaf = student_judgment(numTruth, numLies, worstcaseprob, leaves, nodeReports, nodeDistance, epsilon, rho, a, b)
 
         #Pick remote direction
-        mstRemote = nx.minimum_spanning_tree(graph)
-        mstRemote = produce_shortest_path_mst(graph, list(graph.nodes()), client.h)
-        mstRemote = produce_sparse_mst(graph, leaves, client.h)
-        mstRemote = produce_sparse_mst(graph, unvisited, client.h)
-        mstRemote = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        #mstRemote = nx.minimum_spanning_tree(graph)
+        #mstRemote = produce_shortest_path_mst(graph, list(graph.nodes()), client.h)
+        #mstRemote = produce_sparse_mst(graph, leaves, client.h)
+        #mstRemote = produce_sparse_mst(graph, unvisited, client.h)
+        #mstRemote = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        mstRemote = totalMst
         remoteToNode = nx.shortest_path(mstRemote, source=targetLeaf, target=client.h)[1]
+        #remoteToNode = get_closest_node(graph, targetLeaf)
         botsRemoted = client.remote(targetLeaf, remoteToNode)
         unvisited.remove(targetLeaf)
+        if targetLeaf not in botsAt:
+            botsAt[targetLeaf] = 0
+        if remoteToNode not in botsAt:
+            botsAt[remoteToNode] = 0
         initialTargetLeafBots = botsRemoted - botsAt[targetLeaf]
         botsAt[targetLeaf] = 0
         botsAt[remoteToNode] += botsRemoted
@@ -90,6 +102,8 @@ def solve(client):
             targetLeafBot = True
         else:
             targetLeafBot = False
+        if initialTargetLeafBots > 1 or initialTargetLeafBots < 0:
+            print("Error!")
         targetReports = nodeReports[targetLeaf]
         for i in range(client.students):
             if targetReports[i] == targetLeafBot:
@@ -101,8 +115,10 @@ def solve(client):
         botsleft = client.bots - sum(client.bot_count)
         counter += 1
 
-    print("Bots recovered in remote(s): ")
+    print("Bots discovered in remote(s): ")
     print(counter)
+    print("Time Cost:")
+    print(client.time)
 
     # When all the locations discovered, we do algorithm in q2. (Prim's combined with Uniform Cost Search)
     # Uses client.bot_count
@@ -110,19 +126,23 @@ def solve(client):
     sparsemst = produce_sparse_mst(graph, client.bot_locations, client.h)
 
     mst_remote(sparsemst, client)
-
-    print("Number of bots needed to be rescued:")
-    print(client.l)
     print("Number of final rescued bots:")
-    print(client.bot_count[client.home])
+    print(str(client.bot_count[client.home])+'/'+str(client.l))
+    print("Total Cost:")
+    print(client.time)
 
-    client.end()
+    score = client.end()
+    return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
     weights = [1 for _ in range(len(numTruth))]
+    totalweight = 0
     for i in range(len(numTruth)):
         expo = -1*a*probabilities[i] + b
         weights[i] = (1 - epsilon)**expo
+        totalweight += weights[i]
+    for i in range(len(numTruth)):
+        weights[i] = weights[i]/totalweight
     nodeScores = [0 for _ in range(len(potentialNodes))]
     for i in range(len(potentialNodes)):
         curScore = 0
@@ -205,6 +225,19 @@ def mst_remote(mst, client):
 def get_leaf_nodes(mst):
     return [x for x in mst.nodes() if len(mst.edges(x)) == 1]
 
+def get_closest_node(graph, node):
+    nextEdges = list(graph.edges(node, 'weight', default=0))
+    minEdgeIndex = 0
+    minEdge = -1
+    for i in range(len(nextEdges)):
+        if i == 0:
+            minEdge = nextEdges[i][2]
+            minEdgeIndex = i
+        if nextEdges[i][2] < minEdge:
+            minEdge = nextEdges[i][2]
+            minEdgeIndex = i
+    return nextEdges[minEdgeIndex][1]
+
 def combinelist(list1, list2):
     combined_list = []
     for x in list1:
@@ -213,3 +246,23 @@ def combinelist(list1, list2):
         if x not in list1:
             combined_list.append(x)
     return combined_list
+
+if __name__ == '__main__':
+    testnum = 5
+
+    count = 0
+    arrayscore = [0 for i in range(testnum)]
+
+    print('Epsilon: ' + str(epsilon))
+    print('a in y = ax + b: ' + str(a))
+    print('b in y = ax + b: ' + str(b))
+
+    while count < testnum:
+        timestart = datetime.now().strftime('%H:%M:%S')
+        print('['+timestart+']'+' Iteration '+str(count+1))
+        client = Client(False)
+        score = solve(client)
+        arrayscore[count] = (6*score - 500)
+
+        count += 1
+    print(arrayscore)
