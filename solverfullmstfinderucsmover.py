@@ -7,11 +7,12 @@ from heapq import heappop, heappush
 from itertools import count
 from client_tester import Client
 from datetime import datetime
+from statistics import stdev, mean
 
-epsilon = 0.4
+epsilon = 0.25
 rho = 0.5
-a = 100
-b = 50
+a = 4
+b = 2
 
 def solve(client):
     client.end()
@@ -46,20 +47,20 @@ def solve(client):
         #       Use sparse mst for unvisited
         #mst = produce_sparse_mst(graph, unvisited, client.h)
         #       Use sparse mst for unvisited or has bot, but remove leaves until all leaves are unvisited
-        totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        totalMstLeaves = get_leaf_nodes(totalMst)
-        allLeavesUnvisited = False
-        while not allLeavesUnvisited:
-           allLeavesUnvisited = True
-           for checkLeaf in totalMstLeaves:
-               if checkLeaf not in unvisited:
-                   totalMst.remove_node(checkLeaf)
-                   allLeavesUnvisited = False
-           totalMstLeaves = get_leaf_nodes(totalMst)
-        mst = totalMst
-        leaves = get_leaf_nodes(mst)
+        # totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        # totalMstLeaves = get_leaf_nodes(totalMst)
+        # allLeavesUnvisited = False
+        # while not allLeavesUnvisited:
+        #    allLeavesUnvisited = True
+        #    for checkLeaf in totalMstLeaves:
+        #        if checkLeaf not in unvisited:
+        #            totalMst.remove_node(checkLeaf)
+        #            allLeavesUnvisited = False
+        #    totalMstLeaves = get_leaf_nodes(totalMst)
+        # mst = totalMst
+        # leaves = get_leaf_nodes(mst)
         #   Pick all nodes in unvisited
-        # leaves = unvisited
+        leaves = unvisited
         #   Remove home node if it is in leaves
         if client.h in leaves:
             leaves.remove(client.h)
@@ -71,12 +72,15 @@ def solve(client):
                 nodeReports[leaf] = list(client.scout(leaf, all_students).values())
         #   Pick distance measure mst
         #mstDist = nx.minimum_spanning_tree(graph)
-        mstDist = shortest_path_mst
+        #mstDist = shortest_path_mst
         #mstDist = produce_sparse_mst(graph, leaves, client.h)
         #mstDist = produce_sparse_mst(graph, unvisited, client.h)
         #mstDist = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        # for leaf in leaves:
+        #     nodeDistance[leaf] = nx.shortest_path_length(mstDist, source=leaf, target=client.h)
         for leaf in leaves:
-            nodeDistance[leaf] = nx.shortest_path_length(mstDist, source=leaf, target=client.h)
+            closest_node = get_closest_node(graph, leaf)
+            nodeDistance[leaf] = graph.edges[leaf,closest_node]['weight']
         targetLeaf = student_judgment(numTruth, numLies, worstcaseprob, leaves, nodeReports, nodeDistance, epsilon, rho, a, b)
 
         #Pick remote direction
@@ -85,7 +89,7 @@ def solve(client):
         #mstRemote = produce_sparse_mst(graph, leaves, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisited, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        mstRemote = totalMst
+        mstRemote = shortest_path_mst
         remoteToNode = nx.shortest_path(mstRemote, source=targetLeaf, target=client.h)[1]
         #remoteToNode = get_closest_node(graph, targetLeaf)
         botsRemoted = client.remote(targetLeaf, remoteToNode)
@@ -149,10 +153,10 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
             if curReport[j] == True:
-                curScore += weights[j]
+                curScore += (weights[j])
             else:
-                curScore += -1*weights[j]
-        nodeScores[i] = curScore
+                curScore += (-1*weights[j])
+        nodeScores[i] = curScore - nodeDistances[i]*rho
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
@@ -248,7 +252,7 @@ def combinelist(list1, list2):
     return combined_list
 
 if __name__ == '__main__':
-    testnum = 5
+    testnum = 30
 
     count = 0
     arrayscore = [0 for i in range(testnum)]
@@ -265,4 +269,7 @@ if __name__ == '__main__':
         arrayscore[count] = (6*score - 500)
 
         count += 1
+    print("Scores: ")
     print(arrayscore)
+    print("Average score: "+str(mean(arrayscore)))
+    print("Standard deviation: "+str(stdev(arrayscore)))
