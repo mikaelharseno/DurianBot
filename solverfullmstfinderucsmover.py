@@ -153,6 +153,9 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
             else:
                 curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
+        print("curScore: " + str(curScore))
+        print("nodeDistances[potentialNodes[i]]: " + str(curScore))
+        print("nodeScore: " + str(nodeScores[i]))
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
@@ -262,7 +265,7 @@ if __name__ == '__main__':
         print('['+timestart+']'+' Iteration '+str(count+1))
         client = Client(False)
         score = solve(client)
-        arrayscore[count] = (6*score - 500)
+        arrayscore[count] = (2*score - 100)
 
         count += 1
     print("Scores: ")
