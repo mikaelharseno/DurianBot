@@ -75,7 +75,7 @@ class Client:
     #                                known bot. Generated from bot_count.
     # Please note any unexpected changes you make to these variables may affect
     # the correctness of this skeleton.
-    # 
+    #
     # We have provided you graph files in the form of *.edgelist. You're welcome
     # to modify these as you wish, but do note that ultimately you will be
     # tested on the exact graphs provided.
@@ -132,7 +132,7 @@ class Client:
         if not isinstance(vertex, int):
             self.__print__('/scout API Error: vertex is not an integer. '
                 + 'Skipping call.')
-            return            
+            return
         if not isinstance(students, list) or len(students) == 0:
             self.__print__('/scout API Error: students is not a list or is an '
                 + 'empty list. Skipping call.')
@@ -191,7 +191,7 @@ class Client:
         if not isinstance(to, int):
             self.__print__('/remote API Error: to is not an integer. '
                 + 'Skipping call.')
-            return 
+            return
         if frum <= 0 or frum > self.n:
             self.__print__('/remote API Error: vertex \'from\' ' + str(frum)
                 + ' out of bounds [1, ' + str(self.n) + ']. Skipping call.')

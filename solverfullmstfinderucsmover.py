@@ -35,7 +35,6 @@ def solve(client):
     unvisited = list(graph.nodes())
     botsleft = client.bots - sum(client.bot_count)
     counter = 0
-
     shortest_path_mst = produce_shortest_path_mst(graph, list(graph.nodes()), client.h)
 
     while botsleft > 0 and len(unvisited) > 0:
@@ -119,10 +118,8 @@ def solve(client):
         botsleft = client.bots - sum(client.bot_count)
         counter += 1
 
-    print("Bots discovered in remote(s): ")
-    print(counter)
-    print("Time Cost:")
-    print(client.time)
+    print("Number of Remotes taken to discover all bots: " + str(counter))
+    print("Time Cost: " + str(client.time))
 
     # When all the locations discovered, we do algorithm in q2. (Prim's combined with Uniform Cost Search)
     # Uses client.bot_count
@@ -130,12 +127,11 @@ def solve(client):
     sparsemst = produce_sparse_mst(graph, client.bot_locations, client.h)
 
     mst_remote(sparsemst, client)
-    print("Number of final rescued bots:")
-    print(str(client.bot_count[client.home])+'/'+str(client.l))
-    print("Total Cost:")
-    print(client.time)
+    print("Number of rescued bots: " + str(client.bot_count[client.home])+'/'+str(client.l))
 
     score = client.end()
+    print("Total Score: " + str(score))
+    print()
     return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
@@ -153,9 +149,9 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
             if curReport[j] == True:
-                curScore += (weights[j])
+                curScore += weights[j]
             else:
-                curScore += (-1*weights[j])
+                curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
