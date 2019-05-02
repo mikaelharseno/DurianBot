@@ -11,7 +11,6 @@ import random
 def solve(client):
     f = open("results.txt", "a+")
 
-
     client.end()
     client.start()
 

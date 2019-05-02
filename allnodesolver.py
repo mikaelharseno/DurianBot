@@ -13,22 +13,7 @@ def solve(client):
 
     mst = nx.minimum_spanning_tree(graph)
 
-    degrees = list(mst.degree)
-    print(degrees)
-
-    while (len(mst) > 1):
-        nodeindex = 0
-        lenNodes = len(degrees)
-        while nodeindex < lenNodes:
-            if degrees[nodeindex][1] == 1 and degrees[nodeindex][0] != client.home:
-                break
-            nodeindex += 1
-        u = degrees[nodeindex][0]
-        v = list(mst[u].keys())[0]
-        client.remote(u,v)
-        print(client.bot_count[client.home])
-        mst.remove_node(u)
-        degrees = list(mst.degree)
+    mst_remote(mst, client)
 
     print("Number of bots needed to be resqued:")
     print(client.l)
@@ -36,3 +21,19 @@ def solve(client):
     print(client.bot_count[client.home])
 
     client.end()
+
+def mst_remote(mst, client):
+    degrees = list(mst.degree)
+    while (len(degrees) > 1):
+        nodeindex = 0
+        lenNodes = len(degrees)
+        while nodeindex < lenNodes:
+            if degrees[nodeindex][1] == 1 and degrees[nodeindex][0] != client.h:
+                break
+            nodeindex += 1
+        u = degrees[nodeindex][0]
+        v = list(mst[u].keys())[0]
+        client.remote(u, v)
+        mst.remove_node(u)
+        degrees = list(mst.degree)
+    return 1
