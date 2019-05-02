@@ -9,10 +9,11 @@ from client_tester import Client
 from datetime import datetime
 from statistics import stdev, mean
 
-epsilon = 0.25
-rho = 0.05
-a = 4
-b = 2
+epsilon = 0.2
+# rho = 1/2000
+rho = 0.000005
+a = 0.8
+b = 0.4
 
 def solve(client):
     client.end()
@@ -127,7 +128,7 @@ def solve(client):
     sparsemst = produce_sparse_mst(graph, client.bot_locations, client.h)
 
     mst_remote(sparsemst, client)
-    print("Number of rescued bots: " + str(client.bot_count[client.home])+'/'+str(client.l))
+    # print("Number of rescued bots: " + str(client.bot_count[client.home])+'/'+str(client.l))
 
     score = client.end()
     print("Total Score: " + str(score))
@@ -144,6 +145,7 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
     for i in range(len(numTruth)):
         weights[i] = weights[i]/totalweight
     nodeScores = [0 for _ in range(len(potentialNodes))]
+    curScores, distScores = [], []
     for i in range(len(potentialNodes)):
         curScore = 0
         curReport = nodeReports[potentialNodes[i]]
@@ -153,10 +155,13 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
             else:
                 curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
-        print("curScore: " + str(curScore))
-        print("nodeDistances[potentialNodes[i]]: " + str(curScore))
-        print("nodeScore: " + str(nodeScores[i]))
+        curScores.append(curScore)
+        distScores.append(nodeDistances[potentialNodes[i]]*rho)
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
+    # print("Average curScore: " + str(mean(curScores)))
+    # print("Average distScore: " + str(mean(distScores)))
+    # print("Average Overall Node Score: " + str(mean(nodeScores)))
+    # print()
     return bestNode
 
 def produce_sparse_mst(G, bot_locs, client_home):
@@ -254,7 +259,7 @@ if __name__ == '__main__':
     testnum = 30
 
     count = 0
-    arrayscore = [0 for i in range(testnum)]
+    scores, timeScores = [], []
 
     print('Epsilon: ' + str(epsilon))
     print('a in y = ax + b: ' + str(a))
@@ -265,10 +270,16 @@ if __name__ == '__main__':
         print('['+timestart+']'+' Iteration '+str(count+1))
         client = Client(False)
         score = solve(client)
-        arrayscore[count] = (2*score - 100)
+        scores.append(score)
+        timeScores.append(6 * score - 500)
 
         count += 1
-    print("Scores: ")
-    print(arrayscore)
-    print("Average score: "+str(mean(arrayscore)))
-    print("Standard deviation: "+str(stdev(arrayscore)))
+
+    print()
+    print("Overall Scores from Time Taken: " + str(scores))
+    print("Average Overall Score from Time Taken: "+str(mean(scores)))
+    print("SD of Overall Score from Time Taken: "+str(stdev(scores)))
+    print()
+    print("Normalized Scores from Time Taken: " + str(timeScores))
+    print("Average Normalized Score from Time Taken: "+str(mean(timeScores)))
+    print("SD of Normalized Score from Time Taken: "+str(stdev(timeScores)))
