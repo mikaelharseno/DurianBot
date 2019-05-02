@@ -10,10 +10,9 @@ path = basePath + '/results.txt'
 df = pd.read_csv(path, sep=" ", header=None)
 df.columns = ['worstcaseprob', 'scout_report', 'actualvalue']
 
-data = df.values
 # print(data)
 test_size = 0.3
-X, Y = data[:, :1], data[:, 2]
+X, Y = df.iloc[:, :1], df.iloc[:, 2]
 X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=test_size)
 
 # Fit the model on 33%

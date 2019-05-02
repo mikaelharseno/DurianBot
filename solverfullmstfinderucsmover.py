@@ -8,12 +8,17 @@ from itertools import count
 from client_tester import Client
 from datetime import datetime
 from statistics import stdev, mean
+import pandas as pd
+import os, pickle
 
 epsilon = 0.2
 rho = 0.000005
 a = 0.8
 b = 0.4
 #0.4 and 0.2, ~40%. 1 and 0.5 also bad.
+
+filename = 'finalized_model.sav'
+model = pickle.load(open(filename, 'rb'))
 
 def solve(client):
     client.end()
@@ -141,26 +146,30 @@ def solve(client):
     return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
-    weights = [1 for _ in range(len(numTruth))]
-    totalweight = 0
-    for i in range(len(numTruth)):
-        expo = -1*a*0.5*(1+probabilities[i]) + b
-        weights[i] = (1 - epsilon)**expo
-        totalweight += weights[i]
-    for i in range(len(numTruth)):
-        weights[i] = weights[i]/totalweight
+    # weights = [1 for _ in range(len(numTruth))]
+    # totalweight = 0
+    # for i in range(len(numTruth)):
+    #     expo = -1*a*0.5*(1+probabilities[i]) + b
+    #     weights[i] = (1 - epsilon)**expo
+    #     totalweight += weights[i]
+    # for i in range(len(numTruth)):
+    #     weights[i] = weights[i]/totalweight
     nodeScores = [0 for _ in range(len(potentialNodes))]
-    curScores, distScores = [], []
+    # curScores, distScores = [], []
+
     for i in range(len(potentialNodes)):
         curScore = 0
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
-            if curReport[j] == True:
-                curScore += weights[j]
-            else:
-                curScore -= weights[j]
-        nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
-    bestNode = potentialNodes[nodeScores.index(max(nodeScores))]]
+            results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
+            curScore += results[0, 1]
+            print(curScore)
+            # if curReport[j] == True:
+            #     curScore += weights[j]
+            # else:
+            #     curScore -= weights[j]
+        nodeScores[i] = curScore
+    bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
 def produce_sparse_mst(G, bot_locs, client_home):
