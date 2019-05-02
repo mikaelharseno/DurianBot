@@ -68,6 +68,7 @@ def solve(client):
                     numLies[i] -=1
                 worstcaseprob = (minNumTruth - numTruth[i]) / (numlocations - numTruth[i] - numLies[i])
                 matrix.append([worstcaseprob, studentreport, actualvalue])
+        client.end()
 
     np.savetxt("results.txt", np.array(matrix, np.float64))
     # f.write(str(matrix))
