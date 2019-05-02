@@ -141,10 +141,6 @@ def solve(client):
     return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
-    #print("Truths: ")
-    #print(numTruth)
-    #print("Lies: ")
-    #print(numLies)
     weights = [1 for _ in range(len(numTruth))]
     totalweight = 0
     for i in range(len(numTruth)):
@@ -153,10 +149,6 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         totalweight += weights[i]
     for i in range(len(numTruth)):
         weights[i] = weights[i]/totalweight
-    #print("Student probabilities: ")
-    #print(probabilities)
-    #print("Weights: ")
-    #print(weights)
     nodeScores = [0 for _ in range(len(potentialNodes))]
     curScores, distScores = [], []
     for i in range(len(potentialNodes)):
@@ -164,22 +156,11 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
             if curReport[j] == True:
-                #print("added" + str(weights[j]))
                 curScore += weights[j]
             else:
-                #print("subtracted" + str(weights[j]))
                 curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
-        # curScores.append(curScore)
-        # distScores.append(nodeDistances[potentialNodes[i]]*rho)
-        # print("curScore: " + str(curScore))
-        # print("nodeDistances[potentialNodes[i]]: " + str(curScore))
-        # print("nodeScore: " + str(nodeScores[i]))
-    bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
-    # print("Average curScore: " + str(mean(curScores)))
-    # print("Average distScore: " + str(mean(distScores)))
-    # print("Average Overall Node Score: " + str(mean(nodeScores)))
-    # print()
+    bestNode = potentialNodes[nodeScores.index(max(nodeScores))]]
     return bestNode
 
 def produce_sparse_mst(G, bot_locs, client_home):
