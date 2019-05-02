@@ -170,11 +170,11 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
                 #print("subtracted" + str(weights[j]))
                 curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
-        curScores.append(curScore)
-        distScores.append(nodeDistances[potentialNodes[i]]*rho)
-        print("curScore: " + str(curScore))
-        print("nodeDistances[potentialNodes[i]]: " + str(curScore))
-        print("nodeScore: " + str(nodeScores[i]))
+        # curScores.append(curScore)
+        # distScores.append(nodeDistances[potentialNodes[i]]*rho)
+        # print("curScore: " + str(curScore))
+        # print("nodeDistances[potentialNodes[i]]: " + str(curScore))
+        # print("nodeScore: " + str(nodeScores[i]))
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     # print("Average curScore: " + str(mean(curScores)))
     # print("Average distScore: " + str(mean(distScores)))
