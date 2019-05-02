@@ -10,10 +10,10 @@ from datetime import datetime
 from statistics import stdev, mean
 
 epsilon = 0.2
-# rho = 1/2000
 rho = 0.000005
 a = 0.8
 b = 0.4
+#0.4 and 0.2, ~40%. 1 and 0.5 also bad.
 
 def solve(client):
     client.end()
@@ -70,6 +70,9 @@ def solve(client):
         for leaf in leaves:
             if leaf not in nodeReports:
                 nodeReports[leaf] = list(client.scout(leaf, all_students).values())
+                #print("Report:")
+                #print(nodeReports[leaf])
+                #print("For node: "+str(leaf))
         #   Pick distance measure mst
         #mstDist = nx.minimum_spanning_tree(graph)
         #mstDist = shortest_path_mst
@@ -81,7 +84,9 @@ def solve(client):
         for leaf in leaves:
             closest_node = get_closest_node(graph, leaf)
             nodeDistance[leaf] = graph.edges[leaf,closest_node]['weight']
+            #print("For node: " + str(leaf)+" minimum weight edge is " + str(nodeDistance[leaf]))
         targetLeaf = student_judgment(numTruth, numLies, worstcaseprob, leaves, nodeReports, nodeDistance, epsilon, rho, a, b)
+        #print("Target leaf:" + str(targetLeaf))
 
         #Pick remote direction
         #mstRemote = nx.minimum_spanning_tree(graph)
@@ -136,14 +141,22 @@ def solve(client):
     return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
+    #print("Truths: ")
+    #print(numTruth)
+    #print("Lies: ")
+    #print(numLies)
     weights = [1 for _ in range(len(numTruth))]
     totalweight = 0
     for i in range(len(numTruth)):
-        expo = -1*a*probabilities[i] + b
+        expo = -1*a*0.5*(1+probabilities[i]) + b
         weights[i] = (1 - epsilon)**expo
         totalweight += weights[i]
     for i in range(len(numTruth)):
         weights[i] = weights[i]/totalweight
+    #print("Student probabilities: ")
+    #print(probabilities)
+    #print("Weights: ")
+    #print(weights)
     nodeScores = [0 for _ in range(len(potentialNodes))]
     curScores, distScores = [], []
     for i in range(len(potentialNodes)):
@@ -151,12 +164,17 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
             if curReport[j] == True:
+                #print("added" + str(weights[j]))
                 curScore += weights[j]
             else:
+                #print("subtracted" + str(weights[j]))
                 curScore -= weights[j]
         nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
         curScores.append(curScore)
         distScores.append(nodeDistances[potentialNodes[i]]*rho)
+        print("curScore: " + str(curScore))
+        print("nodeDistances[potentialNodes[i]]: " + str(curScore))
+        print("nodeScore: " + str(nodeScores[i]))
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     # print("Average curScore: " + str(mean(curScores)))
     # print("Average distScore: " + str(mean(distScores)))
@@ -256,7 +274,7 @@ def combinelist(list1, list2):
     return combined_list
 
 if __name__ == '__main__':
-    testnum = 30
+    testnum = 20
 
     count = 0
     scores, timeScores = [], []
@@ -264,6 +282,7 @@ if __name__ == '__main__':
     print('Epsilon: ' + str(epsilon))
     print('a in y = ax + b: ' + str(a))
     print('b in y = ax + b: ' + str(b))
+    print('Rho: ' + str(rho))
 
     while count < testnum:
         timestart = datetime.now().strftime('%H:%M:%S')
