@@ -8,12 +8,17 @@ from itertools import count
 from client_tester import Client
 from datetime import datetime
 from statistics import stdev, mean
+import pandas as pd
+import os, pickle
 
 epsilon = 0.2
 rho = 0.000005
 a = 0.8
 b = 0.4
 #0.4 and 0.2, ~40%. 1 and 0.5 also bad.
+
+filename = 'finalized_model.sav'
+model = pickle.load(open(filename, 'rb'))
 
 def solve(client):
     client.end()
@@ -141,45 +146,30 @@ def solve(client):
     return score
 
 def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeReports, nodeDistances, epsilon, rho, a, b):
-    #print("Truths: ")
-    #print(numTruth)
-    #print("Lies: ")
-    #print(numLies)
-    weights = [1 for _ in range(len(numTruth))]
-    totalweight = 0
-    for i in range(len(numTruth)):
-        expo = -1*a*0.5*(1+probabilities[i]) + b
-        weights[i] = (1 - epsilon)**expo
-        totalweight += weights[i]
-    for i in range(len(numTruth)):
-        weights[i] = weights[i]/totalweight
-    #print("Student probabilities: ")
-    #print(probabilities)
-    #print("Weights: ")
-    #print(weights)
+    # weights = [1 for _ in range(len(numTruth))]
+    # totalweight = 0
+    # for i in range(len(numTruth)):
+    #     expo = -1*a*0.5*(1+probabilities[i]) + b
+    #     weights[i] = (1 - epsilon)**expo
+    #     totalweight += weights[i]
+    # for i in range(len(numTruth)):
+    #     weights[i] = weights[i]/totalweight
     nodeScores = [0 for _ in range(len(potentialNodes))]
-    curScores, distScores = [], []
+    # curScores, distScores = [], []
+
     for i in range(len(potentialNodes)):
         curScore = 0
         curReport = nodeReports[potentialNodes[i]]
         for j in range(len(numTruth)):
-            if curReport[j] == True:
-                #print("added" + str(weights[j]))
-                curScore += weights[j]
-            else:
-                #print("subtracted" + str(weights[j]))
-                curScore -= weights[j]
-        nodeScores[i] = curScore - nodeDistances[potentialNodes[i]]*rho
-        # curScores.append(curScore)
-        # distScores.append(nodeDistances[potentialNodes[i]]*rho)
-        # print("curScore: " + str(curScore))
-        # print("nodeDistances[potentialNodes[i]]: " + str(curScore))
-        # print("nodeScore: " + str(nodeScores[i]))
+            results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
+            curScore += results[0, 1]
+            print(curScore)
+            # if curReport[j] == True:
+            #     curScore += weights[j]
+            # else:
+            #     curScore -= weights[j]
+        nodeScores[i] = curScore
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
-    # print("Average curScore: " + str(mean(curScores)))
-    # print("Average distScore: " + str(mean(distScores)))
-    # print("Average Overall Node Score: " + str(mean(nodeScores)))
-    # print()
     return bestNode
 
 def produce_sparse_mst(G, bot_locs, client_home):
