@@ -173,10 +173,11 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
     for i in range(len(potentialNodes)):
         curReport = nodeReports[potentialNodes[i]]
         #print(pd.DataFrame([probabilities, [int(x) for x in curReport]]).T)
+
         intCurReport = [int(x) for x in curReport]
-        #print(model.predict_proba(pd.DataFrame([probabilities, intCurReport]).T))
-        results = sum(model.predict_proba(pd.DataFrame([probabilities, intCurReport]).T)[:,1])
-        nodeScores[i] = results
+        #print(model.predict_log_proba(pd.DataFrame([probabilities, intCurReport]).T))
+        results = sum(model.predict_log_proba(pd.DataFrame([probabilities, intCurReport]).T)[:,1])
+        nodeScores[i] = results - rho*nodeDistances[potentialNodes[i]]
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 

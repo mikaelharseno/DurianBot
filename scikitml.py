@@ -2,6 +2,8 @@ import pandas as pd
 import pickle, os
 from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neural_network import MLPRegressor
 
 url = ""
 names = ['preg', 'plas', 'pres', 'skin', 'test', 'mass', 'pedi', 'age', 'class']
@@ -19,10 +21,20 @@ X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_s
 #print(Y_train)
 
 # Fit the model on 33%
-model = LogisticRegression()
-model.fit(X_train, Y_train)
+# model = LogisticRegression()
+# model = SVC(C=1.0, kernel='poly', degree=3, gamma='auto', coef0=0.0,
+#         shrinking=True, probability=False, tol=0.001, cache_size=200, class_weight=None,
+#         verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None)
+#model = SVC(kernel='poly', degree=2)
+model = MLPRegressor(solver='adam', alpha=1e-5,\
+                     hidden_layer_sizes=(10, 10), early_stopping = True)
 
-print(list(model.predict_proba(X_test)))
+model.fit(X, y)
+print("Model Created. Starting training. ")
+model.fit(X_train, Y_train)
+print("Finished training. ")
+
+print(list(model.predict(X_test)))
 
 model.score(X_test, Y_test)
 

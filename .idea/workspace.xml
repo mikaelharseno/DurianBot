@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087a1c58-91a6-4ee6-9b4f-879e16bd201a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finalized_model.sav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/finalized_model.sav" beforeDir="false" afterPath="$PROJECT_DIR$/finalized_model.sav" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scikitml.py" beforeDir="false" afterPath="$PROJECT_DIR$/scikitml.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/solverfullmstfinderucsmover.py" beforeDir="false" afterPath="$PROJECT_DIR$/solverfullmstfinderucsmover.py" afterDir="false" />
     </list>
@@ -51,11 +50,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/solverfullmstfinderucsmover.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="243">
-              <caret line="174" column="9" selection-start-line="174" selection-start-column="9" selection-end-line="174" selection-end-column="9" />
+            <state relative-caret-position="412">
+              <caret line="180" column="55" selection-start-line="180" selection-start-column="55" selection-end-line="180" selection-end-column="55" />
               <folding>
                 <element signature="e#27#48#0" expanded="true" />
               </folding>
@@ -63,11 +62,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scikitml.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
+            <state relative-caret-position="226">
+              <caret line="29" column="71" selection-start-line="29" selection-start-column="71" selection-end-line="29" selection-end-column="71" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -112,8 +111,8 @@
         <option value="$PROJECT_DIR$/client_tester.py" />
         <option value="$PROJECT_DIR$/allnodesolver.py" />
         <option value="$PROJECT_DIR$/datacollector.py" />
-        <option value="$PROJECT_DIR$/scikitml.py" />
         <option value="$PROJECT_DIR$/solverfullmstfinderucsmover.py" />
+        <option value="$PROJECT_DIR$/scikitml.py" />
       </list>
     </option>
   </component>
@@ -134,15 +133,6 @@
             <path>
               <item name="project170" type="b2602c69:ProjectViewProjectNode" />
               <item name="project170" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="project170" type="b2602c69:ProjectViewProjectNode" />
-              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
-            </path>
-            <path>
-              <item name="project170" type="b2602c69:ProjectViewProjectNode" />
-              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
-              <item name="&lt; Python 3.6 &gt;" type="70bed36:NamedLibraryElementNode" />
             </path>
           </expand>
           <select />
@@ -412,22 +402,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scikitml.py">
+    <entry file="file://$PROJECT_DIR$/solverfullmstfinderucsmover.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
+        <state relative-caret-position="412">
+          <caret line="180" column="55" selection-start-line="180" selection-start-column="55" selection-end-line="180" selection-end-column="55" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#27#48#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/solverfullmstfinderucsmover.py">
+    <entry file="file://$PROJECT_DIR$/scikitml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="174" column="9" selection-start-line="174" selection-start-column="9" selection-end-line="174" selection-end-column="9" />
+        <state relative-caret-position="226">
+          <caret line="29" column="71" selection-start-line="29" selection-start-column="71" selection-end-line="29" selection-end-column="71" />
           <folding>
-            <element signature="e#27#48#0" expanded="true" />
+            <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>
