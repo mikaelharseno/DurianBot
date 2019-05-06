@@ -52,20 +52,20 @@ def solve(client):
         #       Use sparse mst for unvisited
         #mst = produce_sparse_mst(graph, unvisited, client.h)
         #       Use sparse mst for unvisited or has bot, but remove leaves until all leaves are unvisited
-        totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        totalMstLeaves = get_leaf_nodes(totalMst)
-        allLeavesUnvisited = False
-        while not allLeavesUnvisited:
-           allLeavesUnvisited = True
-           for checkLeaf in totalMstLeaves:
-               if checkLeaf not in unvisited:
-                   totalMst.remove_node(checkLeaf)
-                   allLeavesUnvisited = False
-           totalMstLeaves = get_leaf_nodes(totalMst)
-        mst = totalMst
-        leaves = get_leaf_nodes(mst)
+        # totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        # totalMstLeaves = get_leaf_nodes(totalMst)
+        # allLeavesUnvisited = False
+        # while not allLeavesUnvisited:
+        #    allLeavesUnvisited = True
+        #    for checkLeaf in totalMstLeaves:
+        #        if checkLeaf not in unvisited:
+        #            totalMst.remove_node(checkLeaf)
+        #            allLeavesUnvisited = False
+        #    totalMstLeaves = get_leaf_nodes(totalMst)
+        # mst = totalMst
+        # leaves = get_leaf_nodes(mst)
         #   Pick all nodes in unvisited
-        # leaves = unvisited
+        leaves = unvisited
         #   Remove home node if it is in leaves
         if client.h in leaves:
             leaves.remove(client.h)
@@ -99,7 +99,7 @@ def solve(client):
         #mstRemote = produce_sparse_mst(graph, leaves, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisited, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        mstRemote = totalMst
+        mstRemote = shortest_path_mst
         remoteToNode = nx.shortest_path(mstRemote, source=targetLeaf, target=client.h)[1]
         #remoteToNode = get_closest_node(graph, targetLeaf)
         botsRemoted = client.remote(targetLeaf, remoteToNode)
@@ -157,18 +157,26 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
     nodeScores = [0 for _ in range(len(potentialNodes))]
     # curScores, distScores = [], []
 
+    # for i in range(len(potentialNodes)):
+    #     curScore = 0
+    #     curReport = nodeReports[potentialNodes[i]]
+    #     for j in range(len(numTruth)):
+    #         results = model.predict_proba(pd.DataFrame([probabilities, int(curReport)]).T)
+    #         curScore += results[:, 1]
+    #         # print(curScore)
+    #         # if curReport[j] == True:
+    #         #     curScore += weights[j]
+    #         # else:
+    #         #     curScore -= weights[j]
+    #     nodeScores[i] = curScore
+
     for i in range(len(potentialNodes)):
-        curScore = 0
         curReport = nodeReports[potentialNodes[i]]
-        for j in range(len(numTruth)):
-            results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
-            curScore += results[0, 1]
-            print(curScore)
-            # if curReport[j] == True:
-            #     curScore += weights[j]
-            # else:
-            #     curScore -= weights[j]
-        nodeScores[i] = curScore
+        #print(pd.DataFrame([probabilities, [int(x) for x in curReport]]).T)
+        intCurReport = [int(x) for x in curReport]
+        #print(model.predict_proba(pd.DataFrame([probabilities, intCurReport]).T))
+        results = sum(model.predict_proba(pd.DataFrame([probabilities, intCurReport]).T)[:,1])
+        nodeScores[i] = results
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
