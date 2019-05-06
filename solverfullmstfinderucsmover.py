@@ -163,7 +163,7 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
         for j in range(len(numTruth)):
             results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
             curScore += results[0, 1]
-            print(curScore)
+            # print(curScore)
             # if curReport[j] == True:
             #     curScore += weights[j]
             # else:
@@ -285,9 +285,9 @@ if __name__ == '__main__':
         count += 1
 
     print()
-    print("Overall Scores from Time Taken: " + str(scores))
-    print("Average Overall Score from Time Taken: "+str(mean(scores)))
-    print("SD of Overall Score from Time Taken: "+str(stdev(scores)))
+    print("Overall Scores: " + str(scores))
+    print("Average Overall Score: "+str(mean(scores)))
+    print("SD of Overall Score: "+str(stdev(scores)))
     print()
     print("Normalized Scores from Time Taken: " + str(timeScores))
     print("Average Normalized Score from Time Taken: "+str(mean(timeScores)))
