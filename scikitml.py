@@ -1,6 +1,6 @@
 import pandas as pd
 import pickle, os
-from sklearn import model_selection
+from sklearn import svm, model_selection
 from sklearn.linear_model import LogisticRegression
 
 url = ""
@@ -12,11 +12,12 @@ df.columns = ['worstcaseprob', 'scout_report', 'actualvalue']
 
 # print(data)
 test_size = 0.3
-X, Y = df.iloc[:, :1], df.iloc[:, 2]
+X, Y = df.iloc[:, :2], df.iloc[:, 2]
 X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=test_size)
 
 # Fit the model on 33%
 model = LogisticRegression()
+# model = svm.SVC(kernel='poly', degree=2, probability=True)
 model.fit(X_train, Y_train)
 
 # save the model to disk

@@ -31,9 +31,11 @@ def solve(client):
         print("num students is", str(numstudents))
 
         minNumTruth = ceil(numlocations / 2)
+        maxNumLies = ceil(numlocations / 2)
 
         numTruth = [0 for _ in range(numstudents)]
         numLies = [0 for _ in range(numstudents)]
+        numScoutsAttempted = [0 for _ in range(numstudents)]
 
         #evaluate all locations but in random order
         loc = list(range(numlocations))
@@ -62,11 +64,13 @@ def solve(client):
 
             for i in range(numstudents):
                 studentreport = int(studentreports[i])
+                numScoutsAttempted[i] += 1
                 if studentreport == actualvalue: #is telling the truth
                     numTruth[i] += 1
                 else:
-                    numLies[i] -=1
-                worstcaseprob = (minNumTruth - numTruth[i]) / (numlocations - numTruth[i] - numLies[i])
+                    numLies[i] += 1
+                # worstcaseprob = (minNumTruth - numTruth[i]) / (numlocations - numTruth[i] - numLies[i])
+                worstcaseprob = 1 - ((maxNumLies - numLies[i]) / (numlocations - numScoutsAttempted[i]))
                 matrix.append([worstcaseprob, studentreport, actualvalue])
         client.end()
 

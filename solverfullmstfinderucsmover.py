@@ -30,10 +30,12 @@ def solve(client):
     all_students = list(range(1, client.students + 1))
     totalNodes = len(graph.nodes)
     minNumTruth = ceil(totalNodes / 2)
+    maxNumLies = ceil(totalNodes / 2)
 
     numTruth = [0 for _ in range(client.students)]
     numLies = [0 for _ in range(client.students)]
-    worstcaseprob = [(minNumTruth - numTruth[i]) / (totalNodes - numTruth[i] - numLies[i]) for i in range(client.students)]
+    numScoutsAttempted = [0 for _ in range(client.students)]
+    worstcaseprob = [(maxNumLies) / (totalNodes) for i in range(client.students)]
 
     nodeReports = {}
     nodeDistance = {}
@@ -120,11 +122,12 @@ def solve(client):
             print("Error!")
         targetReports = nodeReports[targetLeaf]
         for i in range(client.students):
+            numScoutsAttempted[i] += 1
             if targetReports[i] == targetLeafBot:
                 numTruth[i] += 1
             else:
                 numLies[i] += 1
-            worstcaseprob[i] = (minNumTruth - numTruth[i]) / (totalNodes - numTruth[i] - numLies[i])
+            worstcaseprob[i] = 1 - ((maxNumLies - numLies[i]) / (totalNodes - numScoutsAttempted[i]))
 
         botsleft = client.bots - sum(client.bot_count)
         counter += 1
@@ -160,15 +163,20 @@ def student_judgment(numTruth, numLies, probabilities, potentialNodes, nodeRepor
     for i in range(len(potentialNodes)):
         curScore = 0
         curReport = nodeReports[potentialNodes[i]]
-        for j in range(len(numTruth)):
-            results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
-            curScore += results[0, 1]
-            # print(curScore)
-            # if curReport[j] == True:
-            #     curScore += weights[j]
-            # else:
-            #     curScore -= weights[j]
+        # for j in range(len(numTruth)):
+        #     # results = model.predict_proba(pd.DataFrame([probabilities[j], int(curReport[j])]))
+        #     # curScore += results[0, 1]
+
+        #     # print(results)
+        #     # print(curScore)
+        #     # if curReport[j] == True:
+        #     #     curScore += weights[j]
+        #     # else:
+        #     #     curScore -= weights[j]
+        results = model.predict_log_proba(pd.DataFrame([probabilities, [int(j) for j in curReport]]).T)
+        curScore += sum(int(j) for j in results[:, 1])
         nodeScores[i] = curScore
+    # print(nodeScores)
     bestNode = potentialNodes[nodeScores.index(max(nodeScores))]
     return bestNode
 
