@@ -47,20 +47,20 @@ def solve(client):
         #       Use sparse mst for unvisited
         #mst = produce_sparse_mst(graph, unvisited, client.h)
         #       Use sparse mst for unvisited or has bot, but remove leaves until all leaves are unvisited
-        # totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        # totalMstLeaves = get_leaf_nodes(totalMst)
-        # allLeavesUnvisited = False
-        # while not allLeavesUnvisited:
-        #    allLeavesUnvisited = True
-        #    for checkLeaf in totalMstLeaves:
-        #        if checkLeaf not in unvisited:
-        #            totalMst.remove_node(checkLeaf)
-        #            allLeavesUnvisited = False
-        #    totalMstLeaves = get_leaf_nodes(totalMst)
-        # mst = totalMst
-        # leaves = get_leaf_nodes(mst)
+        totalMst = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
+        totalMstLeaves = get_leaf_nodes(totalMst)
+        allLeavesUnvisited = False
+        while not allLeavesUnvisited:
+           allLeavesUnvisited = True
+           for checkLeaf in totalMstLeaves:
+               if checkLeaf not in unvisited:
+                   totalMst.remove_node(checkLeaf)
+                   allLeavesUnvisited = False
+           totalMstLeaves = get_leaf_nodes(totalMst)
+        mst = totalMst
+        leaves = get_leaf_nodes(mst)
         #   Pick all nodes in unvisited
-        leaves = unvisited
+        # leaves = unvisited
         #   Remove home node if it is in leaves
         if client.h in leaves:
             leaves.remove(client.h)
@@ -94,7 +94,7 @@ def solve(client):
         #mstRemote = produce_sparse_mst(graph, leaves, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisited, client.h)
         #mstRemote = produce_sparse_mst(graph, unvisitedOrHasBot, client.h)
-        mstRemote = shortest_path_mst
+        mstRemote = totalMst
         remoteToNode = nx.shortest_path(mstRemote, source=targetLeaf, target=client.h)[1]
         #remoteToNode = get_closest_node(graph, targetLeaf)
         botsRemoted = client.remote(targetLeaf, remoteToNode)
@@ -274,7 +274,7 @@ def combinelist(list1, list2):
     return combined_list
 
 if __name__ == '__main__':
-    testnum = 20
+    testnum = 50
 
     count = 0
     scores, timeScores = [], []
